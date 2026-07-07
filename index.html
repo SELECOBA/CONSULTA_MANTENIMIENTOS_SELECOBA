@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscador de Mantenimientos</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
+    .search-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); max-width: 500px; margin: 40px auto; }
+    h3 { margin-top: 0; color: #1a73e8; text-align: center; }
+    input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; box-sizing: border-box; }
+    input[type="text"]:focus { border-color: #1a73e8; outline: none; }
+    button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    button:hover { background-color: #1557b0; }
+    .resultado { margin-top: 25px; padding: 15px; border-radius: 6px; display: none; background: #f8f9fa; border: 1px solid #e8eaed; }
+    .resultado p { margin: 8px 0; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px; font-size: 14px; }
+    .resultado p:last-child { border-bottom: none; }
+    .error { color: #d93025; background-color: #fce8e6; border: 1px solid #fad2cf; font-weight: bold; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="search-box">
+    <h3>Buscador de Mantenimientos</h3>
+    <input type="text" id="codigoInput" placeholder="Introduce el código de equipo...">
+    <button onclick="realizarBusqueda()">Buscar Registro</button>
+    
+    <div id="resultadoBox" class="resultado"></div>
+  </div>
+
+  <script>
+    // URL DE TU WEB APP DE GOOGLE APPS SCRIPT
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxovr2Nhb3DQhBvI6rctK8EiPhxR-g6NzCUAYsurTXmlbe-tQvfpUWP0MZKQRsWcijiWw/exec"; 
+
+    function realizarBusqueda() {
+      const codigo = document.getElementById("codigoInput").value;
+      const resultadoBox = document.getElementById("resultadoBox");
+      
+      if (!codigo.trim()) {
+        resultadoBox.style.display = "block";
+        resultadoBox.innerHTML = "Por favor, escribe un código.";
+        resultadoBox.className = "resultado error";
+        return;
+      }
+      
+      resultadoBox.style.display = "block";
+      resultadoBox.innerHTML = "Buscando en la base de datos...";
+      resultadoBox.className = "resultado";
+
+      // Petición fetch nativa hacia Google Apps Script (Sustituye a google.script.run)
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ codigo: codigo })
+      })
+      .then(response => response.json())
+      .then(response => {
+        if (response.encontrado) {
+          resultadoBox.className = "resultado";
+          resultadoBox.innerHTML = `
+            <p><strong>CÓDIGO:</strong> ${response.codigo}</p>
+            <p><strong>CLIENTE:</strong> ${response.cliente}</p>
+            <p><strong>ORDEN DE COMPRA:</strong> ${response.orden_de_compra}</p>
+            <p><strong>EQUIPO INTERVENIDO:</strong> ${response.equipo_intervenido}</p>
+            <p><strong>TIPO DE MANTENIMIENTO:</strong> ${response.tipo_mnto}</p>
+            <p><strong>FECHA MANTENIMIENTO:</strong> ${response.fecha_mnto}</p>
+            <p><strong>PRÓXIMO MANTENIMIENTO:</strong> ${response.fecha_p_mnto}</p>
+          `;
+        } else {
+          resultadoBox.innerHTML = "Código no encontrado.";
+          resultadoBox.classList.add("error");
+        }
+      })
+      .catch(error => {
+        console.error(error);
+        resultadoBox.innerHTML = "Error al conectar con la base de datos.";
+        resultadoBox.classList.add("error");
+      });
+    }
+  </script>
+</body>
+</html>
