@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buscador de Mantenimientos</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
     .search-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
     h3 { text-align: center; color: #333; }
     input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
@@ -20,7 +20,7 @@
 <body>
 
 <div class="search-box">
-  <h3>Buscador de Mantenimientosss</h3>
+  <h3>Buscador de Mantenimientos</h3>
   <input type="text" id="codigoInput" placeholder="Ingrese el código...">
   <button class="btn-buscar" onclick="buscar(true)">Buscar Registro</button>
   
@@ -39,6 +39,14 @@
   // Pega aquí tu URL exacta de Google Apps Script
   const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzL0vWwIODt0JRyZIdqBFAmXR50w8AVztY8dn2negkQotHog-IyKpITm5ophOGduOwQkg/exec";
 
+  // --- Lógica para detectar la tecla ENTER ---
+  document.getElementById("codigoInput").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      buscar(true);
+    }
+  });
+
   function buscar(esPublico) {
     const codigo = document.getElementById("codigoInput").value;
     const box = document.getElementById("resultadoBox");
@@ -51,7 +59,8 @@
       url += `&user=${user}&pass=${pass}`;
     }
 
-    fetch(url)
+    // Usamos el modo 'cors' para evitar errores de conexión
+    fetch(url, { method: 'GET', mode: 'cors' })
       .then(res => res.json())
       .then(data => {
         if (esPublico && data.encontrado) {
@@ -59,8 +68,8 @@
           box.innerHTML = `
             <p><strong>Cliente:</strong> ${data.cliente}</p>
             <p><strong>Equipo:</strong> ${data.equipo_intervenido}</p>
-            <p><strong>Fecha:</strong> ${data.fecha_mnto}</p>
-            <p><strong>Próximo:</strong> ${data.fecha_p_mnto}</p>
+            <p><strong>Fecha Mnto:</strong> ${data.fecha_mnto}</p>
+            <p><strong>Próx. Mnto:</strong> ${data.fecha_p_mnto}</p>
           `;
           document.getElementById('btnInfo').style.display = 'block';
         } else if (!esPublico && data.encontrado) {
@@ -71,7 +80,7 @@
       })
       .catch(err => {
         console.error(err);
-        alert("Error de conexión con el servidor.");
+        alert("Error de conexión. Asegúrate de haber implementado la nueva versión en Google Apps Script.");
       });
   }
 </script>
