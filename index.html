@@ -41,16 +41,16 @@
       fetch(`${WEB_APP_URL}?codigo=${encodeURIComponent(codigo)}`)
         .then(res => res.json())
         .then(data => {
+          i// ... dentro de tu .then(data => { ...
           if (data.encontrado) {
-            box.innerHTML = `
-              <p><strong>CÓDIGO:</strong> ${data.codigo}</p>
-              <p><strong>CLIENTE:</strong> ${data.cliente}</p>
-              <p><strong>ORDEN DE COMPRA:</strong> ${data.orden_de_compra}</p>
-              <p><strong>EQUIPO:</strong> ${data.equipo_intervenido}</p>
-              <p><strong>TIPO:</strong> ${data.tipo_mnto}</p>
-              <p><strong>FECHA:</strong> ${data.fecha_mnto}</p>
-              <p><strong>PRÓXIMO:</strong> ${data.fecha_p_mnto}</p>
-            `;
+              box.innerHTML = `
+                  <p><strong>CÓDIGO:</strong> ${data.codigo}</p>
+                  <p><strong>CLIENTE:</strong> ${data.cliente}</p>
+                  <p><strong>ORDEN DE COMPRA:</strong> ${data.orden_de_compra}</p>
+                  <p><strong>EQUIPO:</strong> ${data.equipo_intervenido}</p>
+                  <p><strong>TIPO:</strong> ${data.tipo_mnto}</p>
+                  <p><strong>FECHA:</strong> ${data.fecha_mnto}</p> <p><strong>PRÓXIMO:</strong> ${data.fecha_p_mnto}</p> `;
+          }
           } else {
             box.innerHTML = "No se encontró ningún registro con ese código.";
             box.classList.add("error");
