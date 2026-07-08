@@ -2,54 +2,79 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buscador de Mantenimientos</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
-    .search-box { background: white; padding: 25px; border-radius: 8px; max-width: 500px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    input, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-    button { background: #1a73e8; color: white; cursor: pointer; border: none; }
-    #resultadoBox, #loginBox { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+    .search-box { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+    h3 { text-align: center; color: #333; }
+    input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; transition: background 0.3s; }
+    .btn-buscar { background-color: #1a73e8; color: white; }
+    .btn-info { background-color: #34a853; color: white; display: none; }
+    .btn-validar { background-color: #fbbc05; color: #333; }
+    #resultadoBox { margin-top: 20px; padding: 15px; border-radius: 6px; background: #f9f9f9; border-left: 5px solid #1a73e8; display: none; }
+    #loginBox { margin-top: 20px; display: none; border-top: 1px solid #eee; padding-top: 15px; }
   </style>
 </head>
 <body>
-  <div class="search-box">
-    <h3>Buscador de Mantenimientos</h3>
-    <input type="text" id="codigoInput" placeholder="Introduce el código...">
-    <button onclick="buscar(true)">Buscar Registro</button>
-    <div id="resultadoBox"></div>
-    
-    <button id="btnInfo" style="display:none; background:#34a853;" onclick="document.getElementById('loginBox').style.display='block'">Ver Más Información</button>
-    
-    <div id="loginBox">
-      <input type="text" id="user" placeholder="Usuario">
-      <input type="password" id="pass" placeholder="Contraseña">
-      <button onclick="buscar(false)">Validar Acceso</button>
-    </div>
+
+<div class="search-box">
+  <h3>Buscador de Mantenimientos</h3>
+  <input type="text" id="codigoInput" placeholder="Ingrese el código...">
+  <button class="btn-buscar" onclick="buscar(true)">Buscar Registro</button>
+  
+  <div id="resultadoBox"></div>
+  
+  <button id="btnInfo" class="btn-info" onclick="document.getElementById('loginBox').style.display='block'">Más información</button>
+  
+  <div id="loginBox">
+    <input type="text" id="user" placeholder="Usuario">
+    <input type="password" id="pass" placeholder="Contraseña">
+    <button class="btn-validar" onclick="buscar(false)">Validar Acceso</button>
   </div>
+</div>
 
-  <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzL0vWwIODt0JRyZIdqBFAmXR50w8AVztY8dn2negkQotHog-IyKpITm5ophOGduOwQkg/exec";
+<script>
+  // Pega aquí tu URL exacta de Google Apps Script
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzL0vWwIODt0JRyZIdqBFAmXR50w8AVztY8dn2negkQotHog-IyKpITm5ophOGduOwQkg/exec";
 
-    function buscar(esPublico) {
-      const codigo = document.getElementById("codigoInput").value;
-      const box = document.getElementById("resultadoBox");
-      const url = esPublico ? `${WEB_APP_URL}?accion=buscar&codigo=${codigo}` : 
-                              `${WEB_APP_URL}?accion=info&codigo=${codigo}&user=${document.getElementById('user').value}&pass=${document.getElementById('pass').value}`;
-
-      fetch(url)
-        .then(res => res.json())
-        .then(data => {
-          if (esPublico && data.encontrado) {
-            box.style.display = "block";
-            box.innerHTML = `<p>Cliente: ${data.cliente}</p><p>Equipo: ${data.equipo_intervenido}</p>`;
-            document.getElementById("btnInfo").style.display = "block";
-          } else if (!esPublico && data.encontrado) {
-            alert(data.info_privada);
-          } else {
-            alert(data.error || "No encontrado");
-          }
-        });
+  function buscar(esPublico) {
+    const codigo = document.getElementById("codigoInput").value;
+    const box = document.getElementById("resultadoBox");
+    const user = document.getElementById("user").value;
+    const pass = document.getElementById("pass").value;
+    
+    // Construcción de la URL
+    let url = `${WEB_APP_URL}?accion=${esPublico ? 'buscar' : 'info'}&codigo=${codigo}`;
+    if (!esPublico) {
+      url += `&user=${user}&pass=${pass}`;
     }
-  </script>
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (esPublico && data.encontrado) {
+          box.style.display = "block";
+          box.innerHTML = `
+            <p><strong>Cliente:</strong> ${data.cliente}</p>
+            <p><strong>Equipo:</strong> ${data.equipo_intervenido}</p>
+            <p><strong>Fecha:</strong> ${data.fecha_mnto}</p>
+            <p><strong>Próximo:</strong> ${data.fecha_p_mnto}</p>
+          `;
+          document.getElementById('btnInfo').style.display = 'block';
+        } else if (!esPublico && data.encontrado) {
+          alert(data.info_privada);
+        } else {
+          alert(data.error || "No se encontró el registro o credenciales incorrectas.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Error de conexión con el servidor.");
+      });
+  }
+</script>
+
 </body>
 </html>
