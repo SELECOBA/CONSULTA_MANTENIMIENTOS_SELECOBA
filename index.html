@@ -2,63 +2,52 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buscador de Mantenimientos</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 20px; background-color: #f4f6f9; }
-    .search-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); max-width: 500px; margin: 40px auto; }
-    h3 { color: #1a73e8; text-align: center; }
-    input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dadce0; border-radius: 4px; box-sizing: border-box; }
-    button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background-color: #1557b0; }
-    .resultado { margin-top: 25px; padding: 15px; border-radius: 6px; display: none; background: #f8f9fa; border: 1px solid #e8eaed; }
-    .error { color: #d93025; background-color: #fce8e6; border: 1px solid #fad2cf; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f6f9; padding: 20px; }
+    .search-box { background: white; padding: 25px; border-radius: 8px; max-width: 500px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    input, button { width: 100%; padding: 12px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+    button { background: #1a73e8; color: white; cursor: pointer; border: none; }
+    #resultadoBox, #loginBox { margin-top: 20px; padding: 15px; border-radius: 6px; display: none; }
   </style>
 </head>
 <body>
-
   <div class="search-box">
     <h3>Buscador de Mantenimientos</h3>
-    <input type="text" id="codigoInput" placeholder="Introduce el código..." onkeypress="if(event.key==='Enter') realizarBusqueda()">
-    <button onclick="realizarBusqueda()">Buscar Registro</button>
-    <div id="resultadoBox" class="resultado"></div>
+    <input type="text" id="codigoInput" placeholder="Introduce el código...">
+    <button onclick="buscar(true)">Buscar Registro</button>
+    <div id="resultadoBox"></div>
+    
+    <button id="btnInfo" style="display:none; background:#34a853;" onclick="document.getElementById('loginBox').style.display='block'">Ver Más Información</button>
+    
+    <div id="loginBox">
+      <input type="text" id="user" placeholder="Usuario">
+      <input type="password" id="pass" placeholder="Contraseña">
+      <button onclick="buscar(false)">Validar Acceso</button>
+    </div>
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzL0vWwIODt0JRyZIdqBFAmXR50w8AVztY8dn2negkQotHog-IyKpITm5ophOGduOwQkg/exec"; // <-- PEGA TU URL DE GOOGLE AQUÍ
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzL0vWwIODt0JRyZIdqBFAmXR50w8AVztY8dn2negkQotHog-IyKpITm5ophOGduOwQkg/exec";
 
-    function realizarBusqueda() {
+    function buscar(esPublico) {
       const codigo = document.getElementById("codigoInput").value;
       const box = document.getElementById("resultadoBox");
-      
-      if (!codigo.trim()) return;
+      const url = esPublico ? `${WEB_APP_URL}?accion=buscar&codigo=${codigo}` : 
+                              `${WEB_APP_URL}?accion=info&codigo=${codigo}&user=${document.getElementById('user').value}&pass=${document.getElementById('pass').value}`;
 
-      box.style.display = "block";
-      box.innerHTML = "Buscando...";
-      box.className = "resultado";
-
-      // Llamada GET con el código como parámetro
-      fetch(`${WEB_APP_URL}?codigo=${encodeURIComponent(codigo)}`)
+      fetch(url)
         .then(res => res.json())
         .then(data => {
-          if (data.encontrado) {
-            box.innerHTML = `
-              <p><strong>CÓDIGO:</strong> ${data.codigo}</p>
-              <p><strong>CLIENTE:</strong> ${data.cliente}</p>
-              <p><strong>ORDEN DE COMPRA:</strong> ${data.orden_de_compra}</p>
-              <p><strong>EQUIPO:</strong> ${data.equipo_intervenido}</p>
-              <p><strong>TIPO:</strong> ${data.tipo_mnto}</p>
-              <p><strong>FECHA:</strong> ${data.fecha_mnto}</p>
-              <p><strong>PRÓXIMO:</strong> ${data.fecha_p_mnto}</p>
-            `;
+          if (esPublico && data.encontrado) {
+            box.style.display = "block";
+            box.innerHTML = `<p>Cliente: ${data.cliente}</p><p>Equipo: ${data.equipo_intervenido}</p>`;
+            document.getElementById("btnInfo").style.display = "block";
+          } else if (!esPublico && data.encontrado) {
+            alert(data.info_privada);
           } else {
-            box.innerHTML = "No se encontró ningún registro con ese código.";
-            box.classList.add("error");
+            alert(data.error || "No encontrado");
           }
-        })
-        .catch(err => {
-          box.innerHTML = "Error de conexión con la base de datos.";
-          box.classList.add("error");
         });
     }
   </script>
