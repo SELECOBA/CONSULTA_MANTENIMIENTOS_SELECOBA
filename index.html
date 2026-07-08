@@ -2,80 +2,59 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Buscador de Mantenimientos</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-    .search-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); max-width: 500px; margin: 40px auto; }
-    h3 { margin-top: 0; color: #1a73e8; text-align: center; }
-    input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; box-sizing: border-box; }
-    input[type="text"]:focus { border-color: #1a73e8; outline: none; }
-    button { width: 100%; padding: 12px; background-color: #1a73e8; color: white; border: none; border-radius: 4px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-    button:hover { background-color: #1557b0; }
-    .resultado { margin-top: 25px; padding: 15px; border-radius: 6px; display: none; background: #f8f9fa; border: 1px solid #e8eaed; }
-    .resultado p { margin: 8px 0; border-bottom: 1px solid #f1f3f4; padding-bottom: 6px; font-size: 14px; }
-    .resultado p:last-child { border-bottom: none; }
-    .error { color: #d93025; background-color: #fce8e6; border: 1px solid #fad2cf; font-weight: bold; text-align: center; }
+    body { font-family: sans-serif; margin: 40px; background: #f4f6f9; }
+    .search-box { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+    input, button { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; }
+    .resultado { margin-top: 20px; padding: 15px; border-radius: 5px; display: none; background: #e8f0fe; }
+    .error { background: #fce8e6; color: #d93025; }
   </style>
 </head>
 <body>
-
   <div class="search-box">
     <h3>Consulta tu Mantenimiento</h3>
-    <input type="text" id="codigoInput" placeholder="Introduce el código de equipo...">
-    <button onclick="realizarBusqueda()">Buscar Registro</button>
-    
+    <input type="text" id="codigoInput" placeholder="Introduce el código...">
+    <button id="btnBuscar" onclick="realizarBusqueda()">Buscar Registro</button>
     <div id="resultadoBox" class="resultado"></div>
   </div>
 
   <script>
-    // URL DE TU WEB APP DE GOOGLE APPS SCRIPT
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyOyDz2-IJa7fVe28lA0ngNTHTVGcmHizpKJ3anb_ra4p8mGJJYuZLlZpyLvjZwptSGqA/exec"; 
+    const WEB_APP_URL = "TU_NUEVA_URL_AQUÍ"; 
 
     function realizarBusqueda() {
       const codigo = document.getElementById("codigoInput").value;
-      const resultadoBox = document.getElementById("resultadoBox");
-      
-      if (!codigo.trim()) {
-        resultadoBox.style.display = "block";
-        resultadoBox.innerHTML = "Por favor, escribe un código.";
-        resultadoBox.className = "resultado error";
-        return;
-      }
-      
-      resultadoBox.style.display = "block";
-      resultadoBox.innerHTML = "Buscando en la base de datos...";
-      resultadoBox.className = "resultado";
+      const box = document.getElementById("resultadoBox");
+      const btn = document.getElementById("btnBuscar");
 
-      // Petición fetch nativa hacia Google Apps Script (Sustituye a google.script.run)
+      if (!codigo) return alert("Escribe un código");
+
+      box.style.display = "block";
+      box.innerHTML = "Consultando...";
+      btn.disabled = true;
+
       fetch(WEB_APP_URL, {
         method: "POST",
-        mode: "cors",
+        mode: "cors", // Importante: mantén cors
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ codigo: codigo })
       })
-      .then(response => response.json())
-      .then(response => {
-        if (response.encontrado) {
-          resultadoBox.className = "resultado";
-          resultadoBox.innerHTML = `
-            <p><strong>CÓDIGO:</strong> ${response.codigo}</p>
-            <p><strong>CLIENTE:</strong> ${response.cliente}</p>
-            <p><strong>ORDEN DE COMPRA:</strong> ${response.orden_de_compra}</p>
-            <p><strong>EQUIPO INTERVENIDO:</strong> ${response.equipo_intervenido}</p>
-            <p><strong>TIPO DE MANTENIMIENTO:</strong> ${response.tipo_mnto}</p>
-            <p><strong>FECHA MANTENIMIENTO:</strong> ${response.fecha_mnto}</p>
-            <p><strong>PRÓXIMO MANTENIMIENTO:</strong> ${response.fecha_p_mnto}</p>
-          `;
+      .then(res => res.json())
+      .then(data => {
+        btn.disabled = false;
+        if (data.encontrado) {
+          box.classList.remove("error");
+          box.innerHTML = `<strong>Resultado:</strong><br>Cliente: ${data.cliente}<br>Equipo: ${data.equipo_intervenido}<br>Próximo: ${data.fecha_p_mnto}`;
         } else {
-          resultadoBox.innerHTML = "Código no encontrado.";
-          resultadoBox.classList.add("error");
+          box.classList.add("error");
+          box.innerHTML = "Código no encontrado.";
         }
       })
-      .catch(error => {
-        console.error(error);
-        resultadoBox.innerHTML = "Error al conectar con la base de datos.";
-        resultadoBox.classList.add("error");
+      .catch(err => {
+        btn.disabled = false;
+        box.classList.add("error");
+        box.innerHTML = "Error de conexión. Revisa la consola.";
+        console.error(err);
       });
     }
   </script>
