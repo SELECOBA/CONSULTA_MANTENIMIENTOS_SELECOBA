@@ -325,48 +325,29 @@ buscar();
 
 function jsonp(url, callback){
 
-
     const script = document.createElement("script");
 
+    script.type = "text/javascript";
 
     script.src = url 
-    + "&callback="
+    + "&callback=" 
     + callback
-    + "&t="
-    + Date.now();
+    + "&_="
+    + new Date().getTime();
 
 
-
-    script.onload = function(){
-
-        script.remove();
-
-    };
+    document.head.appendChild(script);
 
 
+    setTimeout(function(){
 
-    script.onerror = function(){
+        if(script){
 
+            script.remove();
 
-        script.remove();
+        }
 
-
-        document
-        .getElementById("spinner")
-        .style.display="none";
-
-
-        alert(
-        "No se pudo conectar con el servidor."
-        );
-
-
-    };
-
-
-
-    document.body.appendChild(script);
-
+    },15000);
 
 
 }
