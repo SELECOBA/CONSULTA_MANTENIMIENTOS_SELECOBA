@@ -2,12 +2,10 @@
 <html lang="es">
 
 <head>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+
 <meta charset="UTF-8">
 
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>
 Consulta Certificados SELECOBA
@@ -25,7 +23,7 @@ body{
 
 margin:0;
 
-font-family:'Segoe UI',Arial;
+font-family:'Segoe UI',Arial,sans-serif;
 
 background:#f1f5f9;
 
@@ -56,7 +54,6 @@ text-align:center;
 margin-bottom:20px;
 
 }
-
 
 
 .logo img{
@@ -141,11 +138,23 @@ display:none;
 
 
 
-#resultado{
-
-margin-top:20px;
+.spinner{
 
 display:none;
+
+text-align:center;
+
+margin-top:15px;
+
+}
+
+
+
+#resultado{
+
+display:none;
+
+margin-top:20px;
 
 padding:20px;
 
@@ -175,18 +184,6 @@ border:2px solid #ef4444;
 
 
 
-.spinner{
-
-display:none;
-
-text-align:center;
-
-margin-top:15px;
-
-}
-
-
-
 .login{
 
 display:none;
@@ -196,13 +193,14 @@ margin-top:20px;
 }
 
 
-
 </style>
+
 
 </head>
 
 
 <body>
+
 
 
 <div class="container">
@@ -220,16 +218,18 @@ margin-top:20px;
 
 
 <h2>
-Consulta de Mantenimientoss
+Consulta de Mantenimiento
 </h2>
 
 
-<input 
+
+<input
 id="codigo"
-placeholder="Ingrese código">
+placeholder="Ingrese código del certificado">
 
 
-<button 
+
+<button
 class="buscar"
 onclick="buscar()">
 
@@ -239,15 +239,23 @@ Buscar
 
 
 
-<div class="spinner" id="spinner">
 
-🔄 Consultando...
+<div
+class="spinner"
+id="spinner">
+
+🔄 Consultando certificado...
 
 </div>
 
 
 
-<div id="resultado"></div>
+
+<div
+id="resultado">
+
+</div>
+
 
 
 
@@ -263,7 +271,10 @@ Ver información técnica
 
 
 
-<div class="login" id="login">
+
+<div
+class="login"
+id="login">
 
 
 <input
@@ -291,7 +302,9 @@ Ingresar
 
 </div>
 
+
 </div>
+
 
 
 
@@ -299,10 +312,16 @@ Ingresar
 <script>
 
 
+// NUEVA API CLOUDFLARE
+
 const API =
 "https://selecoba-api.info-selecoba.workers.dev";
 
 
+
+
+
+// ENTER PARA BUSCAR
 
 document
 .getElementById("codigo")
@@ -322,49 +341,8 @@ buscar();
 
 
 
-function jsonp(url,callback){
 
-
-const script=document.createElement("script");
-
-
-script.dataset.jsonp="true";
-
-
-script.src =
-url+
-"&callback="+
-callback+
-"&nocache="+
-Date.now();
-
-
-
-document.head.appendChild(script);
-
-
-
-setTimeout(()=>{
-
-
-if(script.parentNode){
-
-script.remove();
-
-}
-
-
-},20000);
-
-
-
-}
-
-
-
-
-
-function buscar(){
+async function buscar(){
 
 
 
@@ -376,60 +354,96 @@ document
 
 
 
-if(!codigo)return;
+if(!codigo){
 
+return;
 
-
-document
-.getElementById("spinner")
-.style.display="block";
-
-
-
-document
-.getElementById("resultado")
-.style.display="none";
+}
 
 
 
 
-
-const callback =
-"consulta_"+Date.now();
-
+const spinner =
+document.getElementById("spinner");
 
 
-const timer=setTimeout(()=>{
+spinner.style.display="block";
 
 
-document
-.getElementById("spinner")
-.style.display="none";
+
+const resultado =
+document.getElementById("resultado");
 
 
-alert(
-"La consulta está tardando demasiado."
+resultado.style.display="none";
+
+
+
+try{
+
+
+
+const respuesta =
+await fetch(
+
+API+
+"?codigo="+
+encodeURIComponent(codigo)
+
 );
 
 
-},12000);
+
+const data =
+await respuesta.json();
+
+
+
+mostrarResultado(data);
+
+
+
+}
+
+catch(error){
+
+
+
+resultado.style.display="block";
+
+
+resultado.className="error";
+
+
+resultado.innerHTML=
+"❌ Error de conexión con el servidor";
+
+
+
+}
+
+
+
+finally{
+
+
+spinner.style.display="none";
+
+
+}
+
+
+
+}
 
 
 
 
 
 
-window[callback]=function(data){
 
 
-
-clearTimeout(timer);
-
-
-
-document
-.getElementById("spinner")
-.style.display="none";
+function mostrarResultado(data){
 
 
 
@@ -443,8 +457,6 @@ box.style.display="block";
 
 
 
-
-
 if(data.encontrado){
 
 
@@ -453,17 +465,29 @@ box.className="ok";
 
 
 
-box.innerHTML=`
+box.innerHTML=
 
-<h3>✔ Certificado encontrado</h3>
+`
 
-<b>Cliente:</b> ${data.cliente}<br><br>
+<h3>
+✔ Certificado encontrado
+</h3>
 
-<b>Equipo:</b> ${data.equipo}<br><br>
 
-<b>Fecha mantenimiento:</b> ${data.fecha}<br><br>
+<b>Cliente:</b><br>
+${data.cliente}<br><br>
 
-<b>Próximo mantenimiento:</b> ${data.proximo}
+
+<b>Equipo:</b><br>
+${data.equipo}<br><br>
+
+
+<b>Fecha mantenimiento:</b><br>
+${data.fecha}<br><br>
+
+
+<b>Próximo mantenimiento:</b><br>
+${data.proximo}
 
 `;
 
@@ -475,41 +499,34 @@ document
 
 
 
-}else{
+}
+
+else{
 
 
 box.className="error";
 
+
 box.innerHTML=
-"❌ Certificado no encontrado";
+
+`
+❌ Certificado no encontrado
+`;
+
+
+
+document
+.getElementById("btnInfo")
+.style.display="none";
 
 
 }
 
 
 
-delete window[callback];
-
-
-};
-
-
-
-
-
-jsonp(
-
-API+
-"?accion=buscar&codigo="+
-encodeURIComponent(codigo),
-
-callback
-
-);
-
-
-
 }
+
+
 
 
 
@@ -531,7 +548,8 @@ document
 
 
 
-function login(){
+
+async function login(){
 
 
 
@@ -542,60 +560,81 @@ document
 
 
 
-const callback =
-"info_"+Date.now();
+const usuario =
+document
+.getElementById("usuario")
+.value;
+
+
+
+const password =
+document
+.getElementById("password")
+.value;
 
 
 
 
+try{
 
-window[callback]=function(data){
+
+const respuesta =
+await fetch(
+
+API+
+"?accion=info"+
+"&codigo="+encodeURIComponent(codigo)+
+"&user="+encodeURIComponent(usuario)+
+"&pass="+encodeURIComponent(password)
+
+);
+
+
+
+const data =
+await respuesta.json();
+
 
 
 
 if(data.encontrado){
 
 
-alert(data.observaciones);
-
-
-}else{
-
-
-alert(data.mensaje);
-
-
-}
-
-
-
-delete window[callback];
-
-
-};
-
-
-
-
-jsonp(
-
-API+
-"?accion=info"+
-"&codigo="+encodeURIComponent(codigo)+
-"&user="+encodeURIComponent(
-document.getElementById("usuario").value
-)+
-"&pass="+encodeURIComponent(
-document.getElementById("password").value
-),
-
-callback
-
+alert(
+data.observaciones
 );
 
 
+}
+
+else{
+
+
+alert(
+data.mensaje
+);
+
 
 }
+
+
+
+}
+
+catch(error){
+
+
+alert(
+"Error de conexión"
+);
+
+
+}
+
+
+
+}
+
 
 
 </script>
