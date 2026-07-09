@@ -298,12 +298,8 @@ Ingresar
 
 <script>
 
-
-const API=
-
-"https://script.google.com/macros/s/AKfycbyfgo2zeevdlX1Xq7RDz-ExT-FNMpfKDL2MPX11b6gGW3-0YMhaEPJZLOdwe7ccw1OBsQ/exec";
-
-
+const API =
+"https://script.google.com/macros/s/AKfycbwh_rMwJGt7GpLUjwfTc1EaJ6DdGpnPvRknwxaQXruZb0_rLzgI-oUu4jYpsLdUjSUbOg/exec";
 
 
 
@@ -311,13 +307,9 @@ document
 .getElementById("codigo")
 .addEventListener("keypress",function(e){
 
-
-if(e.key==="Enter"){
-
-buscar();
-
-}
-
+    if(e.key==="Enter"){
+        buscar();
+    }
 
 });
 
@@ -327,32 +319,39 @@ buscar();
 
 function jsonp(url, callback){
 
-    const script = document.createElement("script");
 
-    script.type = "text/javascript";
+    const script=document.createElement("script");
 
-    script.src = url 
-    + "&callback=" 
-    + callback
-    + "&_="
-    + new Date().getTime();
+
+    script.type="text/javascript";
+
+
+    script.src =
+    url +
+    "&callback=" +
+    callback +
+    "&_=" +
+    Date.now();
+
 
 
     document.head.appendChild(script);
 
 
-    setTimeout(function(){
 
-        if(script){
+    setTimeout(()=>{
+
+        if(script.parentNode){
 
             script.remove();
 
         }
 
-    },15000);
+    },20000);
 
 
 }
+
 
 
 
@@ -361,110 +360,148 @@ function jsonp(url, callback){
 function buscar(){
 
 
-const codigo=
-document.getElementById("codigo").value.trim();
+    const codigo =
+    document.getElementById("codigo")
+    .value
+    .trim();
 
 
-if(!codigo)return;
+
+    if(!codigo){
+        return;
+    }
 
 
 
-document
-.getElementById("spinner")
-.style.display="block";
-let tiempoEspera=setTimeout(function(){
+    document
+    .getElementById("resultado")
+    .style.display="none";
+
 
 
     document
     .getElementById("spinner")
-    .style.display="none";
+    .style.display="block";
 
 
-    alert(
-    "La consulta está tardando demasiado. Verifique su conexión."
+
+    const callback =
+    "respuesta_" + Date.now();
+
+
+
+    const tiempoEspera=setTimeout(()=>{
+
+
+        document
+        .getElementById("spinner")
+        .style.display="none";
+
+
+        alert(
+        "El servidor está demorando la respuesta."
+        );
+
+
+    },12000);
+
+
+
+
+
+    window[callback]=function(data){
+
+
+
+        clearTimeout(tiempoEspera);
+
+
+
+        document
+        .getElementById("spinner")
+        .style.display="none";
+
+
+
+        const box =
+        document.getElementById("resultado");
+
+
+
+        box.style.display="block";
+
+
+
+        if(data.encontrado){
+
+
+
+            box.className="ok";
+
+
+
+            box.innerHTML=`
+
+            <h3>✔ Certificado encontrado</h3>
+
+            <b>Cliente:</b> ${data.cliente}<br><br>
+
+            <b>Equipo:</b> ${data.equipo}<br><br>
+
+            <b>Fecha mantenimiento:</b> ${data.fecha}<br><br>
+
+            <b>Próximo mantenimiento:</b> ${data.proximo}
+
+            `;
+
+
+
+            document
+            .getElementById("btnInfo")
+            .style.display="block";
+
+
+
+        }else{
+
+
+            box.className="error";
+
+
+            box.innerHTML=
+            "❌ Certificado no encontrado";
+
+
+            document
+            .getElementById("btnInfo")
+            .style.display="none";
+
+
+        }
+
+
+
+        delete window[callback];
+
+    };
+
+
+
+
+
+    jsonp(
+
+        API+
+        "?accion=buscar&codigo="+
+        encodeURIComponent(codigo),
+
+        callback
+
     );
 
 
-},10000);
-
-
-
-window.respuesta=function(data){
-
-
-document
-.getElementById("spinner")
-.style.display="none";
-
-
-
-const box=
-document.getElementById("resultado");
-
-
-
-box.style.display="block";
-
-
-
-if(data.encontrado){
-
-
-box.className="ok";
-
-
-box.innerHTML=
-
-`
-
-<h3>✔ Certificado encontrado</h3>
-
-<b>Cliente:</b> ${data.cliente}<br><br>
-
-<b>Equipo:</b> ${data.equipo}<br><br>
-
-<b>Fecha mantenimiento:</b> ${data.fecha}<br><br>
-
-<b>Próximo mantenimiento:</b> ${data.proximo}
-
-`;
-
-
-
-document
-.getElementById("btnInfo")
-.style.display="block";
-
-
-
-}else{
-
-
-box.className="error";
-
-box.innerHTML=
-
-"❌ Certificado no encontrado";
-
-
 }
 
-
-
-};
-
-
-
-jsonp(
-
-API+
-"?accion=buscar&codigo="
-+encodeURIComponent(codigo)
-
-,"respuesta");
-
-
-}
 
 
 
@@ -473,12 +510,15 @@ API+
 
 function mostrarLogin(){
 
-document
-.getElementById("login")
-.style.display="block";
+
+    document
+    .getElementById("login")
+    .style.display="block";
 
 
 }
+
+
 
 
 
@@ -487,30 +527,45 @@ document
 function login(){
 
 
-const codigo=
-document.getElementById("codigo").value;
+
+const codigo =
+document.getElementById("codigo")
+.value;
 
 
 
-window.info=function(data){
+const callback =
+"info_" + Date.now();
 
 
-if(data.encontrado){
 
 
-alert(data.observaciones);
+window[callback]=function(data){
 
 
-}else{
+
+    if(data.encontrado){
 
 
-alert(data.mensaje);
+        alert(data.observaciones);
 
 
-}
+    }else{
+
+
+        alert(data.mensaje);
+
+
+    }
+
+
+
+    delete window[callback];
+
 
 
 };
+
 
 
 
@@ -518,14 +573,22 @@ jsonp(
 
 API+
 "?accion=info"+
-"&codigo="+codigo+
-"&user="+document.getElementById("usuario").value+
-"&pass="+document.getElementById("password").value
+"&codigo="+encodeURIComponent(codigo)+
+"&user="+encodeURIComponent(
+document.getElementById("usuario").value
+)+
+"&pass="+encodeURIComponent(
+document.getElementById("password").value
+),
 
-,"info");
+callback
+
+);
+
 
 
 }
+
 
 
 </script>
