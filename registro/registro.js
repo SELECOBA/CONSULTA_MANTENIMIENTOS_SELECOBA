@@ -278,7 +278,7 @@ if(
 
 !datos.oc ||
 
-!datos.equipo ||
+!datos.equipo
 
 
 ){
