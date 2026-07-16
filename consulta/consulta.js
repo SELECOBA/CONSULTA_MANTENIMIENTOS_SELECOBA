@@ -210,7 +210,7 @@ boxResultado.innerHTML=
 
 `
 
-<h3>✔ Certificado encontrado</h3>
+<h3>✔ Equipo encontrado</h3>
 
 <b>Código:</b>
 ${data.codigo}
