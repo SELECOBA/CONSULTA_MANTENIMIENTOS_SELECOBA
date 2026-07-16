@@ -277,7 +277,7 @@ ocultarMensajeLogin();
 
 
 //=========================================
-// VALIDAR ACCESO TECNICO
+// VALIDAR ACCESO TECNICO (CORREGIDO A MAYÚSCULAS)
 //=========================================
 
 async function validarAcceso(){
@@ -286,6 +286,8 @@ async function validarAcceso(){
 ocultarMensajeLogin();
 
 
+// Capturamos el usuario, quitamos espacios y lo forzamos a MAYÚSCULAS (.toUpperCase())
+const usuarioMayusculas = txtUsuario.value.trim().toUpperCase();
 
 const datos={
 
@@ -296,7 +298,7 @@ codigo:
 txtCodigo.value.trim(),
 
 usuario:
-txtUsuario.value.trim(),
+usuarioMayusculas, // Se envía garantizado en MAYÚSCULAS
 
 password:
 txtPassword.value.trim()
@@ -361,7 +363,7 @@ if(data.encontrado){
 sesionTecnica.codigo=   data.codigo;
 sesionTecnica.cliente=  data.cliente;
 sesionTecnica.equipo=   data.equipo;
-sesionTecnica.usuario=  datos.usuario;
+sesionTecnica.usuario=  datos.usuario; // Se guarda en mayúsculas para la sesión
 sesionTecnica.password= datos.password;
 sesionTecnica.nombre=   data.nombre;
 sesionTecnica.cargo=    data.cargo;
