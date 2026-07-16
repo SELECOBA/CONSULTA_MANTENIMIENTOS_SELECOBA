@@ -55,12 +55,12 @@ function desbloquearBoton(boton,texto){
 }
 
 //=========================================
-// LOGIN (INDIFERENTE A MAYÚSCULAS/MINÚSCULAS)
+// LOGIN (FORZADO A MAYÚSCULAS)
 //=========================================
 
 async function iniciarSesion(){
-    // Tomamos el usuario, quitamos espacios y lo convertimos a minúsculas
-    const usuario =     txtUsuario.value.trim().toLowerCase();
+    // Tomamos el usuario, quitamos espacios y lo forzamos a MAYÚSCULAS
+    const usuario =     txtUsuario.value.trim().toUpperCase();
     const password =    txtPassword.value.trim();
     
     ocultarMensaje();
@@ -77,7 +77,7 @@ async function iniciarSesion(){
             },
             body:JSON.stringify({
                 accion:"login",
-                usuario: usuario, // Se envía garantizado en minúsculas
+                usuario: usuario, // Se envía garantizado en MAYÚSCULAS (ej. CAANYA)
                 password: password
             })
         });
