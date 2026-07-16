@@ -104,7 +104,7 @@ async function iniciarSesion(){
 }
 
 //=========================================
-// REGISTRAR
+// REGISTRAR (FORZANDO MAYÚSCULAS EN CLIENTE Y EQUIPO)
 //=========================================
 
 async function registrar(){
@@ -115,9 +115,9 @@ async function registrar(){
 
     const datos={
         accion:"registrar",
-        cliente:        txtCliente.value.trim(),
+        cliente:        txtCliente.value.trim().toUpperCase(), // ◄ Convertido a MAYÚSCULAS
         oc:             txtOC.value.trim(),
-        equipo:         txtEquipo.value.trim(),
+        equipo:         txtEquipo.value.trim().toUpperCase(),  // ◄ Convertido a MAYÚSCULAS
         tipo:           cboTipo.value,
         observaciones:  txtObservaciones.value.trim(),
         usuario:        sesion.usuario,
